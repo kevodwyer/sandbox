@@ -1,5 +1,105 @@
-<html>
-<body>
-<h1>It works!</h1>
-</body>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Sandbox</title>
+        <script src="StreamSaver.js"></script>
+<style>
+html, body {
+  height: 100%;
+  margin: 1;
+}
+
+.dropzone-style {
+  height: 20%;
+  background: lightblue;
+}
+.frame-style {
+  height: 80%;
+  width: 100%;
+}
+</style>
+    </head>
+    <body>
+	<div id="app">
+		<h1>iframe sandbox demonstration</h1>
+	</div>
+	    <div id="dropzone" class="dropzone-style">
+	    drop files here!
+        </div>
+        <div><button onclick="reload()">RELOAD IFRAME</button></div>
+         <iframe id="embedded" seamless="seamless" sandbox="allow-same-origin allow-scripts" class="frame-style"></iframe> 
+    </body>
+        <script type="text/javascript">
+        var dropzone = document.getElementById("dropzone");
+        var embedded = document.getElementById("embedded");
+        var allFiles = {};
+        var prefix = "app";
+        dropzone.addEventListener("dragover", function(event){
+            event.preventDefault();
+        }, false);
+        dropzone.addEventListener("drop", function(event){
+            event.preventDefault();
+            let items = event.dataTransfer.items;
+            allFiles = {};
+            for(let i =0; i < items.length; i++){
+                loadFiles(items[i].webkitGetAsEntry(), allFiles);
+            }
+        }, false);
+        
+        var errorCallback = function(e){
+            console.log(e);
+        }
+        var dirCount = 0;
+        function loadFiles(item, allFiles) {
+                if(!item.isDirectory){
+                    item.file(function(file){                    	
+                       var filereader = new FileReader();
+            			filereader.onload = function(){
+            				let fullPath = prefix + item.fullPath;
+            				allFiles[fullPath] = new Uint8Array(this.result);
+        					console.log("added:" + fullPath);
+            			};
+			            filereader.readAsArrayBuffer(file);
+
+                    }, errorCallback);
+                }
+        }
+        
+        function reload() {
+        		console.log("reloading!");
+                function StreamWrapper() {
+                    this.writer = null;
+                    this.readFile = function(filePath) {
+            				var fileData = allFiles[filePath];
+            				let encoder = new TextEncoder();
+                           let uint8Array = encoder.encode(filePath);
+                           var filePathByte = new Uint8Array(1);
+                           filePathByte[0] = uint8Array.byteLength;//todo len > 255
+                           const headerSize = filePathByte.byteLength + uint8Array.byteLength;
+                           var data = new Uint8Array(headerSize + fileData.byteLength);
+                           data.set(filePathByte);
+                           data.set(uint8Array, filePathByte.byteLength);
+                           data.set(fileData, headerSize);
+                            this.writer.write(data);
+                    }
+                }
+                const wrapper = new StreamWrapper();
+                var that = this;
+                let fileStream = streamSaver.createWriteStream("web-viewer-", "text/html", function(url){
+                    	that.embedded.src = prefix + "/page.html";
+                    }, function(seekHi, seekLo, seekLength){
+                        //nothing
+                    }, undefined, 0
+                    ,function(filePath){
+                        wrapper.readFile(filePath)
+                    }
+                )
+                wrapper.writer = fileStream.getWriter()
+        }
+        let encoder = new TextEncoder();
+        let defaultIndexPageData = encoder.encode('<html lang="en"><body><h1>use dnd to set page.html + resource files</h1></body></html>');
+        allFiles["app/page.html"] = new Uint8Array(defaultIndexPageData);
+        </script>
 </html>
