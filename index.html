@@ -23,7 +23,13 @@ html, body {
     </head>
     <body>
 	<div id="app">
-		<h1>iframe sandbox demonstration</h1>
+		<h1>iframe sandbox. </h1>
+		<p>Purpose: Demonstrate that it is not possible to intercept requests inside iframe if allow-same-origin sandbox is NOT set<p>
+		<p>Reference: <a href="https://github.com/w3c/ServiceWorker/issues/765">Issue #765</a></p>
+		<p>Limitation: Relies on WriteableStream in ServiceWorkers (Available in Chrome, but not Firefox as at Dec 2019)</p>
+  		<p>
+  			iframe sandbox attribute:<input id="same-origin-checkbox" type="checkbox" name="origin" value="same" onchange="toggleSameOrigin()" checked>allow-same-origin<br>
+  		</p>
 	</div>
 	    <div id="dropzone" class="dropzone-style">
 	    drop files here!
@@ -36,6 +42,14 @@ html, body {
         var embedded = document.getElementById("embedded");
         var allFiles = {};
         var prefix = "app";
+        function toggleSameOrigin() {
+	        var val = document.getElementById("same-origin-checkbox").checked;
+	        if(val) {
+		        embedded.setAttribute("sandbox", "allow-same-origin allow-scripts");
+	        } else {
+		        embedded.setAttribute("sandbox", "allow-scripts");
+	        }
+        }
         dropzone.addEventListener("dragover", function(event){
             event.preventDefault();
         }, false);
