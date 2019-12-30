@@ -24,10 +24,25 @@ html, body {
     <body>
 	<div id="app">
 		<h1>iframe sandbox. </h1>
-		<p>Purpose: Demonstrate that it is not possible to intercept requests inside iframe if allow-same-origin sandbox is NOT set<p>
+		<p>Goal: I wish to be able to load arbitrary and untrusted html/css/js into a iframe. I want protection from spectre et. al. attacks and also from javascript execution escaping from the confines of the iframe</p?>
+		<p>Scenario: With a E2E encrypted web application, html/css/js resources are unencrypted and combined locally. I then want to display them inside a sandboxed iframe. </p>
+		<p>The POC demonstrates how i envisaged this working:</p>
+		<ul>
+		  	<li>A writeable stream connects index.html to the service worker - sw.js</li>
+  			<li>iframe src is modified to page.html</li>
+  			<li>the request is intercepted in sw.js</li>
+  			<li>the requested resource name is passed to index.html</li>
+  			<li>index.html uses the writeable stream to pass the bytes for the page's content back to sw.js</li>
+  			<li>sw.js responds to the original request with the content received</li>
+  			<li>The process then repeats for any resource inside page.html</li>
+		</ul> 
+
+		<p>Problem: It is not possible to intercept requests inside iframe if allow-same-origin sandbox is NOT set<p>
 		<p>Reference: <a href="https://github.com/w3c/ServiceWorker/issues/765">Issue #765</a></p>
-		<p>Limitation: Relies on WriteableStream in ServiceWorkers (Available in Chrome, but not Firefox as at Dec 2019)</p>
-  		<p>
+		<p>Limitation of POC: Relies on WriteableStream in ServiceWorkers. This has been available in Chrome for some time.  As of Dec 2019 it is available, but not enabled in Firefox nightly (about:config
+Javascript.options.writable_streams)</p>
+		<p>Note: Firefox nightly helpfully provides the following message: 'An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can remove its sandboxing.' </p>
+  		</p>
   			iframe sandbox attribute:<input id="same-origin-checkbox" type="checkbox" name="origin" value="same" onchange="toggleSameOrigin()" checked>allow-same-origin<br>
   		</p>
 	</div>

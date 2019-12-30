@@ -31,7 +31,6 @@ self.onmessage = event => {
 }
 
 function FileData() {
-    //TODO leaks memory
      this.fileMap = new Map()
 
     this.isComplete = function() {
@@ -58,7 +57,8 @@ function FileData() {
         var newFile = new Uint8Array(combinedSize);
         newFile.set(file);
         newFile.set(moreData.subarray(filePathSize + 1), file.byteLength);
-        this.fileMap.set(filePath, newFile)
+        this.fileMap = new Map();
+        this.fileMap.set(filePath, newFile);
     }
 }
 function setupStreamingFileData(port, fileData) {
@@ -80,8 +80,6 @@ self.addEventListener('activate', event => {
     clients.claim();
 });
 
-const maxBlockSize = 1024 * 1024 * 5;
-
 self.onfetch = event => {
     const url = event.request.url
     console.log("url=" + url);
@@ -90,8 +88,9 @@ self.onfetch = event => {
         headers: { 'Access-Control-Allow-Origin': '*' }
       }))
     }
-    if (url.includes(webViewerPrefix)) {
-            var filePath = url.substring(url.indexOf(webViewerPrefix) + webViewerPrefix.length);
+    const requestedResource = new URL(event.request.url)
+    if (requestedResource.pathname.startsWith(webViewerPrefix)) {
+            var filePath = requestedResource.pathname.substring(webViewerPrefix.length);
             console.log("sw filePath=" + filePath);
             const [fileData, port] = fileDataTuple
             port.postMessage({ filePath: filePath })
