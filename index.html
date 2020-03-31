@@ -46,16 +46,19 @@ Javascript.options.writable_streams)</p>
   			iframe sandbox attribute:<input id="same-origin-checkbox" type="checkbox" name="origin" value="same" onchange="toggleSameOrigin()" checked>allow-same-origin<br>
   		</p>
 	</div>
-	<textarea id="page" style="width:800px; height:200px;">
+	<textarea id="page" style="width:800px; height:250px;">
 <html>
   <head>
     <title>POC page loaded in sandboxed iframe from host</title>
   </head>
   <body>
     <script type="application/javascript" src="/apps/pdf/init.js"></script>
-    
+    <label id="jstest"> Javascript is not working.</label>
     <h2>This is an Example html page stored in peergos</h2>
     <img src="burritocat.jpg">
+    <script>
+      document.getElementById("jstest").innerText = "Javascript is working!";
+    </script>
   </body>
 </html>
 </textarea>
