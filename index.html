@@ -48,8 +48,12 @@ Javascript.options.writable_streams)</p>
 	</div>
 	<textarea id="pageContent" style="width:800px; height:150px;">
 		<html><body>
+		    <label id="jstest"> Javascript is not working.</label>
 			<h2>This is an Example html page served via service worker interception and writeable streams</h2>
 			<img src="burritocat.jpg">
+			<script>
+      			document.getElementById("jstest").innerText = "Javascript is working!";
+		    </script>
 		</body></html>
 	</textarea>
         <div><button onclick="reload()">RELOAD IFRAME</button></div>
