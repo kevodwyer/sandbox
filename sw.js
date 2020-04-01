@@ -2,7 +2,7 @@
 
 const downloadMap = new Map()
 var fileDataTuple
-var webViewerPrefix = "/sandbox/";
+var webViewerPrefix = "/sandbox/app/";
 // This should be called once per download
 // Each event has a dataChannel that the data will be piped through
 self.onmessage = event => {
@@ -90,7 +90,7 @@ self.onfetch = event => {
     }
     const requestedResource = new URL(event.request.url)
     if (requestedResource.pathname.startsWith(webViewerPrefix)) {
-            var filePath = requestedResource.pathname.substring(webViewerPrefix.length);
+            var filePath = requestedResource.pathname.substring(webViewerPrefix.length - 4);
             console.log("sw filePath=" + filePath);
             const [fileData, port] = fileDataTuple
             port.postMessage({ filePath: filePath })
