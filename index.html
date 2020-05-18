@@ -52,10 +52,10 @@ Javascript.options.writable_streams)</p>
 	   document.getElementById("jstest").innerText = "Javascript is working!";
 	   escape = function() {
               top.document.getElementById("embedded").removeAttribute("sandbox");
-	      top.document.getElementById("escaped").innerText = "We escaped the iframe sandbox!";
+	      top.document.getElementById("escaped").innerText = "We escaped the iframe sandbox! Uh oh!";
 	   }
    	</script>
-	<button onclick=escape>Escape from sandbox</button>
+	<button onclick="escape()">Escape from sandbox</button>
 </body></html>
 	</textarea>
         <div><button onclick="reload()">RELOAD IFRAME</button></div>
