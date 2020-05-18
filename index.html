@@ -75,6 +75,8 @@ Javascript.options.writable_streams)</p>
         }
         
         function reload() {
+		document.getElementById("escaped").innerText = "";
+		toggleSameOrigin();
         		console.log("reloading!");
         		updateData();
                 function StreamWrapper() {
