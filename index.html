@@ -23,7 +23,7 @@ html, body {
 		<h3>Sandboxing content generated within a page</h3>
 		<p>Goal: We want to load arbitrary and untrusted html/css/js into an iframe. We want protection from spectre et. al. attacks and also from javascript execution escaping from the confines of the iframe</p?>
 		<p>Scenario: With an E2E encrypted web application, html/css/js resources are decrypted locally. We want to display them inside a sandboxed iframe. </p>
-		<p>The POC demonstrates how we envisaged this working:</p>
+		<p>This POC demonstrates how we envisaged this working:</p>
 		<ul>
 		  	<li>The iframe has its src set to a url we can intercept with a service worker, and serve arbitrary content using a WritableStream</li>
 			<li>The iframe ideally has just the sandbox="allow-scripts"</li>
