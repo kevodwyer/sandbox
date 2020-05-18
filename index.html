@@ -42,21 +42,21 @@ Javascript.options.writable_streams)</p>
   			iframe sandbox attribute:<input id="same-origin-checkbox" type="checkbox" name="origin" value="same" onchange="toggleSameOrigin()" checked>allow-same-origin<br>
   		</p>
 	</div>
-<textarea id="escaped"></textarea>
+<label id="escaped"></label>
 	<textarea id="pageContent" style="width:800px; height:150px;">
-		<html><body>
-		    <label id="jstest"> Javascript is not working.</label>
-			<h2>This is an Example html page served via service worker interception and writeable streams</h2>
-			<img src="burritocat.jpg">
-			<script>
-      			   document.getElementById("jstest").innerText = "Javascript is working!";
-			   escape = function() {
-                              top.document.getElementById("embedded").removeAttribute("sandbox");
-			      document.getElementById("escaped").innerText = "We escaped the iframe sandbox!";
-			   }
-		    	</script>
-			<button onclid=escape>Escape from sandbox</button>
-		</body></html>
+<html><body>
+    <label id="jstest"> Javascript is not working.</label>
+	<h2>This is an Example html page served via service worker interception and writeable streams</h2>
+	<img src="burritocat.jpg">
+	<script>
+	   document.getElementById("jstest").innerText = "Javascript is working!";
+	   escape = function() {
+              top.document.getElementById("embedded").removeAttribute("sandbox");
+	      top.document.getElementById("escaped").innerText = "We escaped the iframe sandbox!";
+	   }
+   	</script>
+	<button onclid=escape>Escape from sandbox</button>
+</body></html>
 	</textarea>
         <div><button onclick="reload()">RELOAD IFRAME</button></div>
          <iframe id="embedded" seamless="seamless" sandbox="allow-same-origin allow-scripts" class="frame-style"></iframe> 
