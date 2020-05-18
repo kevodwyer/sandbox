@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Sandbox</title>
+        <title>Sandboxing the dweb</title>
         <script src="StreamSaver.js"></script>
 <style>
 html, body {
@@ -19,18 +19,14 @@ html, body {
     </head>
     <body>
 	<div id="app">
-		<h1>iframe sandbox. </h1>
-		<p>Goal: I wish to be able to load arbitrary and untrusted html/css/js into a iframe. I want protection from spectre et. al. attacks and also from javascript execution escaping from the confines of the iframe</p?>
-		<p>Scenario: With a E2E encrypted web application, html/css/js resources are decrypted and fragments combined locally. I then want to display them inside a sandboxed iframe. </p>
-		<p>The POC demonstrates how i envisaged this working:</p>
+		<h1>Sandboxing the dweb</h1>
+		<h3>Sandboxing content generated within a page</h3>
+		<p>Goal: We want to load arbitrary and untrusted html/css/js into an iframe. We want protection from spectre et. al. attacks and also from javascript execution escaping from the confines of the iframe</p?>
+		<p>Scenario: With an E2E encrypted web application, html/css/js resources are decrypted locally. We want to display them inside a sandboxed iframe. </p>
+		<p>This POC demonstrates how we envisaged this working:</p>
 		<ul>
-		  	<li>A writeable stream connects index.html to the service worker - sw.js</li>
-  			<li>iframe src is modified to page.html</li>
-  			<li>the request is intercepted in sw.js</li>
-  			<li>the requested resource name is passed to index.html</li>
-  			<li>index.html uses the writeable stream to pass the bytes for the page's content back to sw.js</li>
-  			<li>sw.js responds to the original request with the content received</li>
-  			<li>The process then repeats for any resource inside page.html</li>
+		  	<li>The iframe has its src set to a url we can intercept with a service worker, and serve arbitrary content using a WritableStream</li>
+			<li>The iframe ideally has just the sandbox="allow-scripts"</li>
 		</ul> 
 		<p>Limitation of POC: Relies on WriteableStream in ServiceWorkers. This has been available in Chrome for some time.  As of Dec 2019 it is available, but not enabled in Firefox nightly (about:config
 Javascript.options.writable_streams)</p>
