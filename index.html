@@ -31,7 +31,7 @@ html, body {
 		<p>Limitation of POC: Relies on WriteableStream in ServiceWorkers. This has been available in Chrome for some time.  As of Dec 2019 it is available, but not enabled in Firefox nightly (about:config
 Javascript.options.writable_streams)</p>
 		<p>Note: Firefox nightly helpfully provides the following message: 'An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can remove its sandboxing.' </p>
-		<p>Problem: It is not possible to intercept requests inside iframe if allow-same-origin sandbox is NOT set<p>
+		<p>Problem: It is not possible to intercept requests inside iframe unless sandbox attribute contains allow-same-origin<p>
 		<p>References: 
 		<a href="https://github.com/w3c/ServiceWorker/issues/1390">Issue #1390</a>
 		<a href="https://github.com/w3c/ServiceWorker/issues/1437">Issue #1437</a>
@@ -42,14 +42,20 @@ Javascript.options.writable_streams)</p>
   			iframe sandbox attribute:<input id="same-origin-checkbox" type="checkbox" name="origin" value="same" onchange="toggleSameOrigin()" checked>allow-same-origin<br>
   		</p>
 	</div>
+<textarea id="escaped"></textarea>
 	<textarea id="pageContent" style="width:800px; height:150px;">
 		<html><body>
 		    <label id="jstest"> Javascript is not working.</label>
 			<h2>This is an Example html page served via service worker interception and writeable streams</h2>
 			<img src="burritocat.jpg">
 			<script>
-      			document.getElementById("jstest").innerText = "Javascript is working!";
-		    </script>
+      			   document.getElementById("jstest").innerText = "Javascript is working!";
+			   escape = function() {
+                              top.document.getElementById("embedded").removeAttribute("sandbox");
+			      document.getElementById("escaped").innerText = "We escaped the iframe sandbox!";
+			   }
+		    	</script>
+			<button onclid=escape>Escape from sandbox</button>
 		</body></html>
 	</textarea>
         <div><button onclick="reload()">RELOAD IFRAME</button></div>
