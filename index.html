@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Sandboxing the dweb</title>
+        <script src="StreamSaver.js"></script>
+<style>
+html, body {
+  height: 100%;
+  margin: 1;
+}
+
+.frame-style {
+  height: 250px;
+  width: 800px;
+}
+</style>
+    </head>
+    <body>
+	<div id="app">
+		<h1>Sandboxing the dweb</h1>
+		<h3>Sandboxing content generated within a page</h3>
+		<p>Goal: We want to load arbitrary and untrusted html/css/js into an iframe. We want protection from spectre et. al. attacks and also from javascript execution escaping from the confines of the iframe</p?>
+		<p>Scenario: With an E2E encrypted web application, html/css/js resources are decrypted locally. We want to display them inside a sandboxed iframe. </p>
+		<p>This POC demonstrates how we envisaged this working:</p>
+		<ul>
+		  	<li>The iframe has its src set to a url we can intercept with a service worker, and serve arbitrary content using a WritableStream</li>
+			<li>The iframe ideally has just the sandbox="allow-scripts"</li>
+		</ul> 
+		<p>Limitation of POC: Relies on WriteableStream in ServiceWorkers. This has been available in Chrome for some time.  As of Dec 2019 it is available, but not enabled in Firefox nightly (about:config
+Javascript.options.writable_streams)</p>
+		<p>Note: Firefox nightly helpfully provides the following message: 'An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can remove its sandboxing.' </p>
+		<p>Problem: It is not possible to intercept requests inside iframe unless sandbox attribute contains allow-same-origin<p>
+		<p>References: 
+		<a href="https://github.com/w3c/ServiceWorker/issues/1390">Issue #1390</a>
+		<a href="https://github.com/w3c/ServiceWorker/issues/1437">Issue #1437</a>
+		<a href="https://github.com/w3c/ServiceWorker/issues/765">Issue #765</a>
+		</p>
+
+  		</p>
+  			iframe sandbox attribute:<input id="same-origin-checkbox" type="checkbox" name="origin" value="same" onchange="toggleSameOrigin()" checked>allow-same-origin<br>
+  		</p>
+	</div>
+<b><label id="escaped"></label></b>
+	<textarea id="pageContent" style="width:800px; height:150px;">
+<html><body>
+    <label id="jstest"> Javascript is not working.</label>
+	<h2>This is an Example html page served via service worker interception and writeable streams</h2>
+	<img src="burritocat.jpg">
+	<script>
+	   document.getElementById("jstest").innerText = "Javascript is working!";
+	   escape = function() {
+              top.document.getElementById("embedded").removeAttribute("sandbox");
+	      top.document.getElementById("escaped").innerText = "We escaped the iframe sandbox! Uh oh!";
+	   }
+   	</script>
+	<button onclick="escape()">Escape from sandbox</button>
+</body></html>
+	</textarea>
+        <div><button onclick="reload()">RELOAD IFRAME</button></div>
+         <iframe id="embedded" seamless="seamless" sandbox="allow-same-origin allow-scripts" class="frame-style"></iframe> 
+    </body>
+        <script type="text/javascript">
+        var embedded = document.getElementById("embedded");
+        var allFiles = {};
+        var prefix = "app";
+        function toggleSameOrigin() {
+	        var val = document.getElementById("same-origin-checkbox").checked;
+	        if(val) {
+		        embedded.setAttribute("sandbox", "allow-same-origin allow-scripts");
+	        } else {
+		        embedded.setAttribute("sandbox", "allow-scripts");
+	        }
+        }
+        
+        function reload() {
+		document.getElementById("escaped").innerText = "";
+		toggleSameOrigin();
+        		console.log("reloading!");
+        		updateData();
+                function StreamWrapper() {
+                    this.writer = null;
+                    this.readFile = function(filePath) {
+                    		console.log("reading file:" + filePath);
+            				var fileData = allFiles[filePath];
+            				let encoder = new TextEncoder();
+                           let uint8Array = encoder.encode(filePath);
+                           var filePathByte = new Uint8Array(1);
+                           filePathByte[0] = uint8Array.byteLength;//todo len > 255
+                           const headerSize = filePathByte.byteLength + uint8Array.byteLength;
+                           var data = new Uint8Array(headerSize + fileData.byteLength);
+                           data.set(filePathByte);
+                           data.set(uint8Array, filePathByte.byteLength);
+                           data.set(fileData, headerSize);
+                            this.writer.write(data);
+                    }
+                }
+                const wrapper = new StreamWrapper();
+                var that = this;
+                let fileStream = streamSaver.createWriteStream("web-viewer-", "text/html", function(url){
+                    	that.embedded.src = prefix + "/page.html";
+                    }, function(seekHi, seekLo, seekLength){
+                        //nothing
+                    }, undefined, 0
+                    ,function(filePath){
+                        wrapper.readFile(filePath)
+                    }
+                )
+                wrapper.writer = fileStream.getWriter()
+        }
+        function updateData() {
+        	let encoder = new TextEncoder();
+        	let pageContext = document.getElementById("pageContent").value;
+        	let defaultIndexPageData = encoder.encode(pageContext);
+	        allFiles["app/page.html"] = new Uint8Array(defaultIndexPageData);
+	        let base64 = "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";
+			let raw = window.atob(base64);
+			let rawLength = raw.length;
+			let imgArray = new Uint8Array(new ArrayBuffer(rawLength));
+
+			for(i = 0; i < rawLength; i++) {
+           		imgArray[i] = raw.charCodeAt(i);
+			}
+			allFiles["app/burritocat.jpg"] = imgArray;
+        }
+        </script>
+</html>
