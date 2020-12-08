@@ -30,7 +30,7 @@
     // Some browser has it but ain't allowed to construct a stream yet
     streamSaver.supported = 'serviceWorker' in navigator && !!new ReadableStream() && !!new WritableStream()
   } catch (err) {}
-
+/*
   try {
     const { readable } = new TransformStream()
     const mc = new MessageChannel()
@@ -41,7 +41,7 @@
   } catch (err) {
     // Was first enabled in chrome v73
   }
-
+*/
   function createWriteStream (filename, mimeType, urlCallback, seekCallback, queuingStrategy, size, fileDataCallback) {
     // normalize arguments
     if (Number.isFinite(queuingStrategy)) {
